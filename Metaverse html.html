@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>3D VR Racing Game - Perfect Controls</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@^4.2.1/dist/aframe-event-set-component.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #ui-left {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            background: rgba(255, 152, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #controls-container {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left brake right";
+            grid-gap: 5px;
+        }
+        #btnUp {
+            grid-area: up;
+        }
+        #btnLeft {
+            grid-area: left;
+        }
+        #btnBrake {
+            grid-area: brake;
+            background: rgba(255, 0, 0, 0.7);
+        }
+        #btnRight {
+            grid-area: right;
+        }
+        #speed-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            z-index: 999;
+        }
+        #view-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            z-index: 999;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a-scene vr-mode-ui="enabled: true" background="color: #87CEEB">
+        <!-- Enhanced lighting -->
+        <a-entity light="type: ambient; color: #FFFFFF; intensity: 0.8"></a-entity>
+        <a-entity light="type: directional; color: #FFFFFF; intensity: 0.5" position="-1 2 1"></a-entity>
+        
+        <!-- Brighter ground -->
+        <a-entity id="ground" geometry="primitive: plane; width: 10000; height: 10000" 
+                 rotation="-90 0 0" material="color: #A5D6A7; roughness: 0.5"></a-entity>
+        
+        <!-- Improved Road System -->
+        <a-entity id="road-system" position="0 0.1 0">
+            <a-entity id="infinite-road" geometry="primitive: plane; width: 10; height: 10000" 
+                     material="color: #7F8C9A; roughness: 0.5; metalness: 0.1" 
+                     position="0 0 -5000" rotation="-90 0 0">
+                <a-entity id="road-markings" position="0 0.01 0"></a-entity>
+            </a-entity>
+            
+            <a-entity id="left-boundary" geometry="primitive: box; width: 0.5; height: 0.3; depth: 10000"
+                     material="color: #FFFFFF" position="-5.25 0.15 -5000"></a-entity>
+            <a-entity id="right-boundary" geometry="primitive: box; width: 0.5; height: 0.3; depth: 10000"
+                     material="color: #FFFFFF" position="5.25 0.15 -5000"></a-entity>
+        </a-entity>
+        
+        <!-- Player Car -->
+        <a-entity id="player-car" position="0 0.5 0">
+            <a-box id="car-body" width="1.8" height="0.5" depth="0.8" color="#FF1A1A" position="0 0.25 0">
+                <a-box width="1.6" height="0.3" depth="0.01" color="#ADD8E6" opacity="0.7" position="0 0.4 0.4"></a-box>
+                <a-box width="1.4" height="0.05" depth="0.5" color="#333333" roughness="0.2" metalness="0.8" position="0 0.55 0.2"></a-box>
+                <a-box width="1.8" height="0.2" depth="0.3" color="#C0C0C0" roughness="0.1" metalness="1" position="0 0.2 0.7"></a-box>
+                <a-box class="headlight" width="0.1" height="0.1" depth="0.1" color="#FFFFAA" position="0.8 0.3 0.7" light="type: point; intensity: 1; distance: 10"></a-box>
+                <a-box class="headlight" width="0.1" height="0.1" depth="0.1" color="#FFFFAA" position="-0.8 0.3 0.7" light="type: point; intensity: 1; distance: 10"></a-box>
+                <a-box width="0.1" height="0.1" depth="0.1" color="#FF3333" position="0.8 0.3 -0.7"></a-box>
+                <a-box width="0.1" height="0.1" depth="0.1" color="#FF3333" position="-0.8 0.3 -0.7"></a-box>
+                <a-cylinder class="wheel" radius="0.15" height="0.1" color="#222222" position="0.9 0 -0.4" rotation="90 0 0">
+                    <a-ring color="#444" radius-inner="0.05" radius-outer="0.15" rotation="90 0 0"></a-ring>
+                </a-cylinder>
+                <a-cylinder class="wheel" radius="0.15" height="0.1" color="#222222" position="-0.9 0 -0.4" rotation="90 0 0">
+                    <a-ring color="#444" radius-inner="0.05" radius-outer="0.15" rotation="90 0 0"></a-ring>
+                </a-cylinder>
+                <a-cylinder class="wheel" radius="0.15" height="0.1" color="#222222" position="0.9 0 0.4" rotation="90 0 0">
+                    <a-ring color="#444" radius-inner="0.05" radius-outer="0.15" rotation="90 0 0"></a-ring>
+                </a-cylinder>
+                <a-cylinder class="wheel" radius="0.15" height="0.1" color="#222222" position="-0.9 0 0.4" rotation="90 0 0">
+                    <a-ring color="#444" radius-inner="0.05" radius-outer="0.15" rotation="90 0 0"></a-ring>
+                </a-cylinder>
+                <a-box width="0.1" height="0.2" depth="1.2" color="#111111" position="0 0.6 -0.6"></a-box>
+                <a-box width="0.05" height="0.1" depth="0.2" color="#333333" position="0.9 0.4 0.1"></a-box>
+                <a-box width="0.05" height="0.1" depth="0.2" color="#333333" position="-0.9 0.4 0.1"></a-box>
+            </a-box>
+        </a-entity>
+        
+        <!-- Camera Rig -->
+        <a-entity id="camera-rig" position="0 1.6 0">
+            <a-entity id="fpv-camera" camera="active: true" position="0 0.2 0.5" 
+                     look-controls wasd-controls="enabled: false">
+                <a-entity id="steering-wheel" position="0.3 -0.2 0.3" rotation="0 0 20">
+                    <a-ring color="#555" radius-inner="0.1" radius-outer="0.2"></a-ring>
+                </a-entity>
+            </a-entity>
+            <a-entity id="tpv-camera" camera="active: false" position="0 1.5 3" 
+                     look-controls wasd-controls="enabled: false"></a-entity>
+        </a-entity>
+        
+        <!-- UI Elements -->
+        <div id="speed-display">Speed: <span id="speed">0</span> km/h</div>
+        <div id="view-toggle">Switch View</div>
+        
+        <!-- Left-aligned controls -->
+        <div id="ui-left">
+            <div id="controls-container">
+                <button class="control-btn" id="btnUp">↑</button>
+                <button class="control-btn" id="btnLeft">←</button>
+                <button class="control-btn" id="btnBrake">↓</button>
+                <button class="control-btn" id="btnRight">→</button>
+            </div>
+        </div>
+    </a-scene>
+
+    <script>
+        // Game state
+        const state = {
+            speed: 0,
+            maxSpeed: 180,
+            acceleration: 1.4,
+            deceleration: 0.8,
+            friction: 0.4,
+            steering: 0,
+            roadPosition: 0,
+            currentView: 'fpv',
+            keypress: {
+                up: false,
+                left: false,
+                right: false,
+                down: false
+            },
+            roadWidth: 10,
+            carWidth: 1.8,
+            markingInterval: 30,
+            nextMarkingZ: 0
+        };
+
+        // Initialize scene
+        document.addEventListener('DOMContentLoaded', function() {
+            setupControls();
+            createInitialRoadMarkings();
+            setInterval(gameLoop, 1000/60);
+        });
+
+        function setupControls() {
+            // Keyboard controls
+            window.addEventListener('keydown', (e) => {
+                if (e.keyCode === 38) state.keypress.up = true;
+                if (e.keyCode === 40) state.keypress.down = true;
+                if (e.keyCode === 37) state.keypress.left = true;
+                if (e.keyCode === 39) state.keypress.right = true;
+            });
+            
+            window.addEventListener('keyup', (e) => {
+                if (e.keyCode === 38) state.keypress.up = false;
+                if (e.keyCode === 40) state.keypress.down = false;
+                if (e.keyCode === 37) state.keypress.left = false;
+                if (e.keyCode === 39) state.keypress.right = false;
+            });
+            
+            // Touch controls with better touch events
+            document.getElementById('btnUp').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                state.keypress.up = true;
+            });
+            document.getElementById('btnUp').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                state.keypress.up = false;
+            });
+            
+            document.getElementById('btnLeft').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                state.keypress.left = true;
+            });
+            document.getElementById('btnLeft').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                state.keypress.left = false;
+            });
+            
+            document.getElementById('btnRight').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                state.keypress.right = true;
+            });
+            document.getElementById('btnRight').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                state.keypress.right = false;
+            });
+            
+            document.getElementById('btnBrake').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                state.keypress.down = true;
+            });
+            document.getElementById('btnBrake').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                state.keypress.down = false;
+            });
+            
+            // Mouse controls
+            document.getElementById('btnUp').addEventListener('mousedown', () => state.keypress.up = true);
+            document.getElementById('btnUp').addEventListener('mouseup', () => state.keypress.up = false);
+            document.getElementById('btnLeft').addEventListener('mousedown', () => state.keypress.left = true);
+            document.getElementById('btnLeft').addEventListener('mouseup', () => state.keypress.left = false);
+            document.getElementById('btnRight').addEventListener('mousedown', () => state.keypress.right = true);
+            document.getElementById('btnRight').addEventListener('mouseup', () => state.keypress.right = false);
+            document.getElementById('btnBrake').addEventListener('mousedown', () => state.keypress.down = true);
+            document.getElementById('btnBrake').addEventListener('mouseup', () => state.keypress.down = false);
+            
+            // View toggle
+            document.getElementById('view-toggle').addEventListener('click', toggleView);
+        }
+
+        function toggleView() {
+            document.getElementById('fpv-camera').setAttribute('camera', 'active', false);
+            document.getElementById('tpv-camera').setAttribute('camera', 'active', false);
+            
+            if (state.currentView === 'fpv') {
+                state.currentView = 'tpv';
+                document.getElementById('tpv-camera').setAttribute('camera', 'active', true);
+            } else {
+                state.currentView = 'fpv';
+                document.getElementById('fpv-camera').setAttribute('camera', 'active', true);
+            }
+        }
+
+        function createInitialRoadMarkings() {
+            const markingsContainer = document.getElementById('road-markings');
+            
+            for (let z = -100; z < 100; z += state.markingInterval) {
+                addRoadMarking(z);
+            }
+            state.nextMarkingZ = 100;
+        }
+
+        function addRoadMarking(zPos) {
+            const markingsContainer = document.getElementById('road-markings');
+            const marking = document.createElement('a-box');
+            
+            marking.setAttribute('width', 0.5);
+            marking.setAttribute('height', 0.02);
+            marking.setAttribute('depth', 10);
+            marking.setAttribute('color', '#FFFF00');
+            marking.setAttribute('position', `0 0 ${zPos}`);
+            
+            markingsContainer.appendChild(marking);
+        }
+
+        function gameLoop() {
+            // Movement calculations
+            if (state.keypress.up) {
+                state.speed += state.acceleration - (state.speed * 0.015);
+            } else if (state.speed > 0) {
+                state.speed -= state.friction;
+            }
+            
+            if (state.keypress.down && state.speed > 0) {
+                state.speed -= state.deceleration;
+            }
+            
+            if (state.keypress.left) {
+                state.steering -= 0.5 * (1 + state.speed / state.maxSpeed);
+            }
+            if (state.keypress.right) {
+                state.steering += 0.5 * (1 + state.speed / state.maxSpeed);
+            }
+            
+            if (!state.keypress.left && !state.keypress.right) {
+                state.steering *= 0.9;
+                if (Math.abs(state.steering) < 0.1) state.steering = 0;
+            }
+            
+            state.speed = Math.max(0, Math.min(state.speed, state.maxSpeed));
+            state.steering = Math.max(-15, Math.min(15, state.steering));
+            
+            // Update car position
+            const playerCar = document.getElementById('player-car');
+            let currentPos = playerCar.getAttribute('position');
+            let newX = currentPos.x + state.steering * 0.01 * state.speed;
+            
+            const roadBoundary = state.roadWidth/2 - state.carWidth/2;
+            newX = Math.max(-roadBoundary, Math.min(roadBoundary, newX));
+            
+            playerCar.setAttribute('position', {
+                x: newX,
+                y: currentPos.y,
+                z: currentPos.z
+            });
+            
+            playerCar.setAttribute('rotation', {
+                x: 0,
+                y: 0,
+                z: -state.steering * 1.5
+            });
+            
+            // Update steering wheel
+            const steeringWheel = document.getElementById('steering-wheel');
+            if (steeringWheel) {
+                steeringWheel.setAttribute('rotation', `0 0 ${20 + state.steering * 30}`);
+            }
+            
+            // Update road system
+            if (state.speed > 0) {
+                const markingsContainer = document.getElementById('road-markings');
+                const speedFactor = state.speed * 0.1;
+                state.roadPosition += speedFactor;
+                
+                while (state.roadPosition > state.nextMarkingZ) {
+                    addRoadMarking(state.nextMarkingZ);
+                    state.nextMarkingZ += state.markingInterval;
+                }
+                
+                const markings = markingsContainer.children;
+                for (let i = 0; i < markings.length; i++) {
+                    const pos = markings[i].getAttribute('position');
+                    if (pos.z < state.roadPosition - 200) {
+                        markingsContainer.removeChild(markings[i]);
+                        i--;
+                    }
+                }
+            }
+            
+            // Update UI
+            document.getElementById('speed').textContent = Math.floor(state.speed * 2);
+            
+            // Update camera
+            const cameraRig = document.getElementById('camera-rig');
+            cameraRig.setAttribute('position', {
+                x: newX,
+                y: 1.6,
+                z: currentPos.z
+            });
+            
+            // Animate wheels
+            if (state.speed > 0) {
+                const wheels = document.querySelectorAll('.wheel');
+                const rotationSpeed = state.speed * 3;
+                const turnFactor = state.steering * 0.5;
+                
+                wheels.forEach((wheel, index) => {
+                    const currentRotation = wheel.getAttribute('rotation');
+                    let newRotation = (currentRotation.y + rotationSpeed) % 360;
+                    
+                    if (index < 2) {
+                        newRotation += turnFactor;
+                    }
+                    
+                    wheel.setAttribute('rotation', `90 ${newRotation} 0`);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

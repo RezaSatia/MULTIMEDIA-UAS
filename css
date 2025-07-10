@@ -1,0 +1,6 @@
+#controls-container {
+    display: grid;
+    grid-template-areas:
+        ". up ."
+        "left brake right";
+}
